@@ -37,7 +37,7 @@ export default function Canvas({
     return () => window.removeEventListener('resize', syncDimensions);
   }, [syncDimensions]);
 
-  const drawStroke = useCallback((ctx, points, strokeColor, strokeSize, strokeTool) => {
+  const drawStroke = useCallback((ctx, points, strokeColor, strokeSize, strokeTool, isActive = false) => {
     if (!points || points.length < 2) return;
 
     const outline = getStroke(points, {
@@ -51,9 +51,14 @@ export default function Canvas({
     const path = new Path2D(pathStr);
 
     if (strokeTool === 'eraser') {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fill(path);
-      ctx.globalCompositeOperation = 'source-over';
+      if (isActive) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill(path);
+      } else {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fill(path);
+        ctx.globalCompositeOperation = 'source-over';
+      }
     } else {
       ctx.fillStyle = strokeColor;
       ctx.fill(path);
@@ -86,7 +91,7 @@ export default function Canvas({
     ctx.restore();
 
     if (pointsRef.current.length > 1) {
-      drawStroke(ctx, pointsRef.current, color, brushSize, tool);
+      drawStroke(ctx, pointsRef.current, color, brushSize, tool, true);
     }
   }, [color, brushSize, tool, drawStroke]);
 
